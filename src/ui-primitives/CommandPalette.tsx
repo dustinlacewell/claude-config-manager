@@ -17,7 +17,6 @@ interface Props {
 
 export function CommandPalette({ actions }: Props) {
   const [open, setOpen] = useState(false)
-  const [input, setInput] = useState('')
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -30,10 +29,6 @@ export function CommandPalette({ actions }: Props) {
     document.addEventListener('keydown', h)
     return () => document.removeEventListener('keydown', h)
   }, [])
-
-  useEffect(() => {
-    if (!open) setInput('')
-  }, [open])
 
   if (!open) return null
 
@@ -53,14 +48,12 @@ export function CommandPalette({ actions }: Props) {
         className="w-[640px] max-w-[90vw] bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <Command shouldFilter value={input} onValueChange={setInput}>
+        <Command shouldFilter>
           <Command.Input
             placeholder="Type a command or search…"
             autoFocus
-            value={input}
-            onValueChange={setInput}
           />
-          <div className="max-h-[400px] overflow-auto py-1">
+          <Command.List className="max-h-[400px] overflow-auto py-1">
             <Command.Empty>No results.</Command.Empty>
             {[...groups.entries()].map(([group, items]) => (
               <Command.Group key={group} heading={group}>
@@ -79,7 +72,7 @@ export function CommandPalette({ actions }: Props) {
                 ))}
               </Command.Group>
             ))}
-          </div>
+          </Command.List>
         </Command>
       </div>
     </div>

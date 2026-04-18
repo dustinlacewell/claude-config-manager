@@ -19,11 +19,12 @@ export const pluginDescriptor: UiDescriptor<Plugin> = {
   Editor: ({ value, onChange }) => (
     <>
       <div className="pb-2 border-b border-zinc-800">
-        <Switch
-          value={value.enabled}
-          onChange={(next) => onChange({ ...value, enabled: next })}
-          label={value.enabled ? 'Enabled' : 'Disabled'}
-        />
+        <Field orientation="row" label="Enabled">
+          <Switch
+            value={value.enabled}
+            onChange={(next) => onChange({ ...value, enabled: next })}
+          />
+        </Field>
       </div>
 
       {value.installPath && (

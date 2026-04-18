@@ -1,7 +1,7 @@
 {
   "name": "ccm",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,6 +19,8 @@
     "@tanstack/react-virtual": "^3.13.24",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
     "@uiw/react-codemirror": "^4.23.7",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",

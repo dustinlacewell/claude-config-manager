@@ -7,6 +7,7 @@ export const Settings = z.object({
     })
     .default({ apiKey: '' }),
   markdownDefaultMode: z.enum(['edit', 'read']).default('edit'),
+  checkUpdatesOnStartup: z.boolean().default(true),
 })
 export type Settings = z.infer<typeof Settings>
 

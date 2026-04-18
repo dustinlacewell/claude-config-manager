@@ -5,6 +5,7 @@ import { useStore } from '@/app/store'
 import { pickDirectory } from '@/adapters/dialog'
 import { fs } from '@/adapters'
 import { toast } from 'sonner'
+import { checkForUpdates, setUpdateScenario } from '@/app/updater'
 
 export const buildPaletteActions = (): PaletteAction[] => {
   const state = useStore.getState()
@@ -154,6 +155,45 @@ export const buildPaletteActions = (): PaletteAction[] => {
     label: 'Settings…',
     onSelect: () => openSettingsDialog(),
   })
+  actions.push({
+    id: 'updates:check',
+    group: 'View',
+    label: 'Check for updates…',
+    onSelect: () => {
+      setUpdateScenario('real')
+      checkForUpdates()
+    },
+  })
+
+  if (import.meta.env.DEV) {
+    actions.push({
+      id: 'dev:mock-update-available',
+      group: 'Dev',
+      label: 'Mock: update available',
+      onSelect: () => {
+        setUpdateScenario('available')
+        checkForUpdates()
+      },
+    })
+    actions.push({
+      id: 'dev:mock-update-none',
+      group: 'Dev',
+      label: 'Mock: no update',
+      onSelect: () => {
+        setUpdateScenario('none')
+        checkForUpdates()
+      },
+    })
+    actions.push({
+      id: 'dev:mock-update-error',
+      group: 'Dev',
+      label: 'Mock: update check error',
+      onSelect: () => {
+        setUpdateScenario('error')
+        checkForUpdates()
+      },
+    })
+  }
 
   return actions
 }

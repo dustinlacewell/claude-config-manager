@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { create } from 'zustand'
 import type { Settings } from '@/ontology'
 import { Field } from './Field'
+import { Switch } from './Switch'
 import { cn } from './util'
 
 interface SettingsDialogState {
@@ -23,9 +24,10 @@ export const openSettingsDialog = () => useSettingsDialog.getState().show()
 interface Props {
   settings: Settings
   onChange: (next: Settings) => void
+  onCheckForUpdates?: () => void
 }
 
-export function SettingsDialog({ settings, onChange }: Props) {
+export function SettingsDialog({ settings, onChange, onCheckForUpdates }: Props) {
   const { open, close } = useSettingsDialog()
   if (!open) return null
 
@@ -51,6 +53,7 @@ export function SettingsDialog({ settings, onChange }: Props) {
         <div className="flex-1 overflow-auto px-5 py-4 space-y-8">
           <Section title="Editor" description="Defaults for the markdown editor.">
             <Field
+              orientation="row"
               label="Markdown default mode"
               hint="Which view to show when opening markdown content."
             >
@@ -60,6 +63,34 @@ export function SettingsDialog({ settings, onChange }: Props) {
               />
             </Field>
           </Section>
+          <Section title="Updates" description="Checks the GitHub release feed, no telemetry.">
+            <Field
+              orientation="row"
+              label="Check for updates on startup"
+            >
+              <Switch
+                value={settings.checkUpdatesOnStartup}
+                onChange={(v) => onChange({ ...settings, checkUpdatesOnStartup: v })}
+              />
+            </Field>
+            {onCheckForUpdates && (
+              <Field
+                orientation="row"
+                label="Check now"
+                hint="Checks the release feed immediately."
+              >
+                <button
+                  type="button"
+                  onClick={onCheckForUpdates}
+                  className="text-xs px-3 py-1.5 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 text-zinc-100 transition-colors"
+                >
+                  Check
+                </button>
+              </Field>
+            )}
+          </Section>
+          {/* Hidden until agentic features actually use the key. Kept in the
+              Settings schema so existing config.json files round-trip cleanly.
           <Section title="AI" description="Credentials for upcoming agentic features. Stored locally at ~/.config/ccm/config.json.">
             <Field
               label="Anthropic API Key"
@@ -77,6 +108,7 @@ export function SettingsDialog({ settings, onChange }: Props) {
               />
             </Field>
           </Section>
+          */}
           <Section title="About">
             <div className="text-xs text-zinc-500 space-y-1 font-mono">
               <div>ccm — Claude Code Manager</div>
@@ -139,43 +171,44 @@ function ModeToggle({
   )
 }
 
-function SecretInput({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-}) {
-  const [show, setShow] = useState(false)
-  const [local, setLocal] = useState(value)
-
-  const commit = () => {
-    if (local !== value) onChange(local)
-  }
-
-  return (
-    <div className="flex gap-2 items-center">
-      <input
-        type={show ? 'text' : 'password'}
-        value={local}
-        placeholder={placeholder}
-        onChange={(e) => setLocal(e.target.value)}
-        onBlur={commit}
-        className={cn(
-          'flex-1 bg-zinc-900/40 hover:bg-zinc-900/80 focus:bg-zinc-900 rounded px-2 py-1',
-          'border border-dashed border-zinc-800 hover:border-zinc-700 focus:border-orange-400 focus:border-solid',
-          'outline-none transition-colors font-mono text-[13px] text-zinc-100 placeholder:text-zinc-600',
-        )}
-      />
-      <button
-        type="button"
-        onClick={() => setShow((s) => !s)}
-        className="text-xs text-zinc-500 hover:text-zinc-100 px-2 py-1"
-      >
-        {show ? 'hide' : 'show'}
-      </button>
-    </div>
-  )
-}
+// Paired with the commented-out AI section above. Uncomment both together.
+// function SecretInput({
+//   value,
+//   onChange,
+//   placeholder,
+// }: {
+//   value: string
+//   onChange: (v: string) => void
+//   placeholder?: string
+// }) {
+//   const [show, setShow] = useState(false)
+//   const [local, setLocal] = useState(value)
+//
+//   const commit = () => {
+//     if (local !== value) onChange(local)
+//   }
+//
+//   return (
+//     <div className="flex gap-2 items-center">
+//       <input
+//         type={show ? 'text' : 'password'}
+//         value={local}
+//         placeholder={placeholder}
+//         onChange={(e) => setLocal(e.target.value)}
+//         onBlur={commit}
+//         className={cn(
+//           'flex-1 bg-zinc-900/40 hover:bg-zinc-900/80 focus:bg-zinc-900 rounded px-2 py-1',
+//           'border border-dashed border-zinc-800 hover:border-zinc-700 focus:border-orange-400 focus:border-solid',
+//           'outline-none transition-colors font-mono text-[13px] text-zinc-100 placeholder:text-zinc-600',
+//         )}
+//       />
+//       <button
+//         type="button"
+//         onClick={() => setShow((s) => !s)}
+//         className="text-xs text-zinc-500 hover:text-zinc-100 px-2 py-1"
+//       >
+//         {show ? 'hide' : 'show'}
+//       </button>
+//     </div>
+//   )
+// }

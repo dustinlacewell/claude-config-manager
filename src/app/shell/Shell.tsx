@@ -12,6 +12,7 @@ import {
 } from '@/ui-primitives'
 import { Toaster, toast } from 'sonner'
 import { buildPaletteActions } from '@/app/palette'
+import { checkForUpdates, setUpdateScenario } from '@/app/updater'
 
 export function Shell() {
   const bootstrap = useStore((s) => s.bootstrap)
@@ -56,7 +57,14 @@ export function Shell() {
           toast.success(`Added ${paths.length} project${paths.length === 1 ? '' : 's'}`)
         }}
       />
-      <SettingsDialog settings={settings} onChange={updateSettings} />
+      <SettingsDialog
+        settings={settings}
+        onChange={updateSettings}
+        onCheckForUpdates={() => {
+          setUpdateScenario('real')
+          checkForUpdates()
+        }}
+      />
       <Toaster theme="dark" position="bottom-right" />
     </div>
   )

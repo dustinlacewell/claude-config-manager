@@ -41,3 +41,6 @@ Desktop.ini
 .idea
 *.swp
 *.swo
+
+# Claude Code local state
+.claude/
