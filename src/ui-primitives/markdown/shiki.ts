@@ -15,8 +15,13 @@ const escapeHtml = (s: string): string =>
 const plainFallback = (code: string): string =>
   `<pre class="shiki"><code>${escapeHtml(code)}</code></pre>`
 
+const keyOf = (code: string, lang: string): string => `${lang}\u0000${code}`
+
+export const highlightCached = (code: string, lang: string): string | null =>
+  cache.get(keyOf(code, lang)) ?? null
+
 export const highlight = async (code: string, lang: string): Promise<string> => {
-  const key = `${lang}\u0000${code}`
+  const key = keyOf(code, lang)
   const hit = cache.get(key)
   if (hit) return hit
   try {
