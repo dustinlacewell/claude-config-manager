@@ -3,25 +3,6 @@ import DownloadButtons from "./DownloadButtons.astro";
 import pkg from "../../../package.json";
 
 const version = `v${pkg.version}`;
-
-const kindRows = [
-  { name: "Agents", count: 12 },
-  { name: "Commands", count: 8 },
-  { name: "Skills", count: 5, active: true },
-  { name: "Rules", count: 3 },
-  { name: "Hooks", count: 2 },
-  { name: "MCP Servers", count: 4 },
-  { name: "Memory", count: 17 },
-];
-
-const listItems = [
-  { name: "git-worktree-manager", desc: "Create, switch, cleanup worktrees", active: true },
-  { name: "schema-migration-helper", desc: "Write and review DB migrations", dirty: true },
-  { name: "shiki-code-highlight", desc: "Syntax-highlight code fences" },
-  { name: "test-triage", desc: "Parse test failures into fix tasks" },
-  { name: "commit-message-writer", desc: "Draft conventional commits" },
-];
-
 ---
 
 <section class="relative overflow-hidden">
@@ -63,131 +44,74 @@ const listItems = [
           <span class="h-3 w-3 rounded-full bg-ink-700"></span>
           <span class="h-3 w-3 rounded-full bg-ink-700"></span>
           <span class="ml-3 text-xs font-mono text-ink-400">CCM — Claude Code Manager</span>
-          <span class="ml-auto text-[10px] font-mono text-ink-500 hidden sm:inline">⌘K</span>
+          <span class="ml-auto text-[10px] font-mono text-ink-500">live demo · {version}</span>
         </div>
 
-        <div class="grid grid-cols-12 text-sm h-[440px] md:h-[520px]">
-          <!-- Sidebar -->
-          <aside class="col-span-3 border-r border-hairline bg-ink-950 flex flex-col overflow-hidden">
-            <div class="p-2 space-y-0.5">
-              <div class="text-[10px] uppercase tracking-widest text-ink-500 px-2 pt-2 pb-1.5 font-semibold">Scopes</div>
-              <div class="px-2 py-1.5 rounded text-ink-300 hover:bg-ink-900 cursor-default">
-                <div class="text-[13px]">Global</div>
-                <div class="text-[10px] font-mono text-ink-500 truncate">~/.claude</div>
-              </div>
-              <div class="relative px-2 py-1.5 rounded bg-ink-900 cursor-default">
-                <span class="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"></span>
-                <div class="text-[13px] text-ink-100">openfront</div>
-                <div class="text-[10px] font-mono text-ink-500 truncate">~/code/openfront</div>
-              </div>
-              <div class="px-2 py-1.5 rounded text-ink-300 hover:bg-ink-900 cursor-default">
-                <div class="text-[13px]">ccm</div>
-                <div class="text-[10px] font-mono text-ink-500 truncate">~/ext/ccm</div>
-              </div>
+        <div class="relative h-[520px] md:h-[640px] bg-ink-950">
+          <div
+            id="demo-placeholder"
+            class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-900 to-ink-950 transition-opacity duration-500"
+          >
+            <div class="absolute inset-0 bg-grid opacity-60"></div>
+            <div class="relative flex items-center gap-3 px-5 py-2.5 rounded-full border border-hairline bg-ink-900/80 backdrop-blur">
+              <span class="h-1.5 w-1.5 rounded-full bg-accent animate-pulse"></span>
+              <span class="font-mono text-[12px] text-ink-300 uppercase tracking-widest">Loading demo…</span>
             </div>
-
-            <div class="p-2 space-y-px mt-2">
-              <div class="text-[10px] uppercase tracking-widest text-ink-500 px-2 pt-2 pb-1.5 font-semibold">Configuration</div>
-              {kindRows.map(({ name, count, active }) => (
-                <div class:list={[
-                  "relative flex items-center justify-between px-2 py-1.5 rounded cursor-default",
-                  active ? "bg-ink-900" : "hover:bg-ink-900/60",
-                ]}>
-                  {active && <span class="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"></span>}
-                  <span class={active ? "text-[13px] text-ink-100" : "text-[13px] text-ink-300"}>{name}</span>
-                  <span class="text-[10px] font-mono text-ink-500">{count}</span>
-                </div>
-              ))}
-            </div>
-
-            <div class="mt-auto p-3 border-t border-hairline flex items-center justify-between text-[11px] text-ink-500">
-              <span class="font-mono">{version}</span>
-              <svg viewBox="0 0 24 24" fill="none" class="h-3.5 w-3.5"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.4.9a7 7 0 00-2-1.2L14 3h-4l-.5 2.6a7 7 0 00-2 1.2L5 6l-2 3.4 2 1.5a7 7 0 000 2.2l-2 1.5 2 3.4 2.4-.9a7 7 0 002 1.2L10 21h4l.5-2.6a7 7 0 002-1.2l2.4.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/></svg>
-            </div>
-          </aside>
-
-          <!-- ListPane -->
-          <section class="col-span-3 border-r border-hairline bg-ink-950 flex flex-col overflow-hidden">
-            <div class="p-2 border-b border-hairline flex items-center gap-2">
-              <div class="flex-1 flex items-center gap-2 px-2 py-1.5 rounded bg-ink-900 border border-hairline">
-                <svg viewBox="0 0 16 16" fill="none" class="h-3.5 w-3.5 text-ink-500"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="text-[11px] text-ink-500">Search skills…</span>
-              </div>
-              <button class="text-[11px] text-ink-300 hover:text-ink-100 px-2 py-1 rounded hover:bg-ink-900">+ New</button>
-            </div>
-            <div class="flex-1 overflow-hidden p-1.5 space-y-0.5">
-              {listItems.map(({ name, desc, active, dirty }) => (
-                <div class:list={[
-                  "relative px-2.5 py-2 rounded cursor-default",
-                  active ? "bg-ink-900" : "hover:bg-ink-900/60",
-                ]}>
-                  {active && <span class="absolute left-0 top-2 bottom-2 w-0.5 bg-accent rounded-r"></span>}
-                  <div class="flex items-center gap-1.5">
-                    <span class={active ? "text-[12px] text-ink-100" : "text-[12px] text-ink-200"}>{name}</span>
-                    {dirty && <span class="h-1.5 w-1.5 rounded-full bg-accent"></span>}
-                  </div>
-                  <div class="text-[10px] text-ink-500 truncate mt-0.5">{desc}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <!-- EditPane -->
-          <section class="col-span-6 bg-ink-950 flex flex-col overflow-hidden">
-            <div class="px-4 py-3 border-b border-hairline">
-              <div class="flex items-center justify-between">
-                <div class="text-[13px] font-semibold text-ink-100 truncate">git-worktree-manager</div>
-                <div class="flex items-center gap-2 text-[10px] text-ink-500 shrink-0">
-                  <span class="font-mono">~3.2k tokens</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between mt-1">
-                <div class="text-[10px] font-mono text-ink-500 truncate">~/.claude/skills/git-worktree-manager.md</div>
-                <div class="flex items-center gap-1 text-[10px] text-ink-400 shrink-0">
-                  <button class="hover:text-ink-100">Copy to…</button>
-                  <span class="text-ink-700">·</span>
-                  <button class="hover:text-ink-100">Move</button>
-                </div>
-              </div>
-            </div>
-            <div class="flex-1 overflow-hidden p-4 space-y-3 text-[12px]">
-              <div>
-                <div class="text-[10px] uppercase tracking-wider text-ink-500 mb-1">Name</div>
-                <div class="font-mono text-ink-200">git-worktree-manager</div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <div class="text-[10px] uppercase tracking-wider text-ink-500 mb-1">License</div>
-                  <div class="font-mono text-ink-200">MIT</div>
-                </div>
-                <div>
-                  <div class="text-[10px] uppercase tracking-wider text-ink-500 mb-1">Tools</div>
-                  <div class="flex flex-wrap gap-1">
-                    <span class="px-1.5 py-0.5 rounded bg-ink-900 border border-hairline text-[10px] font-mono text-ink-300">Bash</span>
-                    <span class="px-1.5 py-0.5 rounded bg-ink-900 border border-hairline text-[10px] font-mono text-ink-300">Read</span>
-                    <span class="px-1.5 py-0.5 rounded bg-ink-900 border border-hairline text-[10px] font-mono text-ink-300">Edit</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div class="text-[10px] uppercase tracking-wider text-ink-500 mb-1">Body</div>
-                <div class="rounded border border-hairline bg-ink-900/60 p-2.5 font-mono text-[11px] leading-relaxed text-ink-300 space-y-1">
-                  <div><span class="text-accent"># Git Worktree Manager</span></div>
-                  <div class="h-1"></div>
-                  <div>Create and manage git worktrees</div>
-                  <div>without leaving Claude Code.</div>
-                  <div class="h-1"></div>
-                  <div><span class="text-accent">## When to use</span></div>
-                  <div>When the user wants to work on</div>
-                  <div>multiple branches <span class="bg-accent/20 text-accent px-0.5 rounded">in parallel</span></div>
-                  <div>without stashing changes.</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
+          </div>
+          <iframe
+            id="demo-frame"
+            data-src="/demo/index.html"
+            title="CCM live demo"
+            class="absolute inset-0 w-full h-full border-0 opacity-0 transition-opacity duration-500"
+            allow="clipboard-read; clipboard-write"
+          ></iframe>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  // Lazy-load the demo iframe: the standalone app is ~2 MB of JS + Shiki
+  // chunks on demand. Only start fetching once the hero actually enters
+  // (or nears) the viewport — on most screens this fires immediately
+  // anyway, but it saves the payload for visitors who bounce instantly.
+  const frame = document.getElementById('demo-frame') as HTMLIFrameElement | null
+  const placeholder = document.getElementById('demo-placeholder') as HTMLDivElement | null
+
+  if (frame && placeholder) {
+    const load = () => {
+      if (frame.src) return
+      const target = frame.dataset.src
+      if (!target) return
+      frame.addEventListener(
+        'load',
+        () => {
+          frame.style.opacity = '1'
+          placeholder.style.opacity = '0'
+          window.setTimeout(() => placeholder.remove(), 500)
+        },
+        { once: true },
+      )
+      frame.src = target
+    }
+
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              load()
+              obs.disconnect()
+              return
+            }
+          }
+        },
+        { rootMargin: '200px' },
+      )
+      obs.observe(frame)
+    } else {
+      load()
+    }
+  }
+</script>

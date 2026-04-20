@@ -70,7 +70,7 @@ async function install(handle: UpdateHandle, toastId: string | number) {
         break
     }
   })
-  if (handle.simulated) {
+  if (handle.simulated || import.meta.env.VITE_DEMO) {
     toast.success('Mock install complete (no relaunch in dev).', { id: progressId, duration: 4000 })
     return
   }
@@ -88,6 +88,9 @@ async function check(): Promise<UpdateHandle | null> {
 }
 
 async function checkReal(): Promise<UpdateHandle | null> {
+  // Demo builds run in a browser with no Tauri runtime. Never attempt to
+  // import the updater plugin — its top-level code assumes the host app.
+  if (import.meta.env.VITE_DEMO) return null
   const { check: tauriCheck } = await import('@tauri-apps/plugin-updater')
   const u = await tauriCheck()
   if (!u) return null

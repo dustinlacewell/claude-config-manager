@@ -5,6 +5,7 @@ node_modules
 
 # Build output
 dist
+dist-demo
 dist-ssr
 *.local
 .vite

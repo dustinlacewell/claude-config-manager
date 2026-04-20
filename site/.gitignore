@@ -4,3 +4,6 @@ dist
 .env
 .env.production
 .DS_Store
+
+# Copied in from ../dist-demo at build time; never commit.
+public/demo

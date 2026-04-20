@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:demo": "tsc -b && vite build --mode demo",
+    "build:site": "npm run build:demo && node scripts/copy-demo-to-site.mjs && npm --prefix site ci && npm --prefix site run build",
+    "preview:demo": "vite preview --mode demo --outDir dist-demo",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
