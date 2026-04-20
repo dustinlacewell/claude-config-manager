@@ -2,15 +2,13 @@ name: Tauri
 
 on:
   push:
-    branches: [master]
     tags: ['v*']
   workflow_dispatch:
 
-# Tags cut official releases; pushes to main only produce dev artifacts that
-# get attached to the workflow run. Never cancel a tag build mid-flight.
+# Tags cut official releases. Never cancel a tag build mid-flight.
 concurrency:
   group: tauri-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -69,9 +67,7 @@ jobs:
 
       - run: npm ci
 
-      # --- Tag push: build + attach to a GitHub Release ------------------
-      - name: Build & release (tag)
-        if: github.ref_type == 'tag'
+      - name: Build & release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -89,21 +85,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.tauri-args }}
-
-      # --- Main push: build only, upload as workflow artifact ------------
-      - name: Build (main dev artifact)
-        if: github.ref_type != 'tag'
-        uses: tauri-apps/tauri-action@v0
-        with:
-          args: ${{ matrix.tauri-args }}
-
-      - name: Collect dev artifacts
-        if: github.ref_type != 'tag'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ccm-${{ matrix.name }}-${{ github.sha }}
-          if-no-files-found: ignore
-          retention-days: 14
-          path: |
-            src-tauri/target/${{ matrix.rust-target }}/release/bundle/**/*
-            src-tauri/target/release/bundle/**/*
