@@ -12,6 +12,7 @@ export const Kind = z.enum([
   'plugin',
   'marketplace',
   'conversation',
+  'catalog',
 ])
 export type Kind = z.infer<typeof Kind>
 

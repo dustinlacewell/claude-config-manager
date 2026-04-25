@@ -11,6 +11,7 @@ import { marketplaceDescriptor } from './marketplace'
 import { claudemdDescriptor } from './claudemd'
 import { memoryDescriptor } from './memory'
 import { conversationDescriptor } from './conversation'
+import { catalogDescriptor } from './catalog'
 
 export * from './types'
 export * from './knowledge'
@@ -27,6 +28,7 @@ export const descriptors: Record<Kind, UiDescriptor<any>> = {
   plugin: pluginDescriptor,
   marketplace: marketplaceDescriptor,
   conversation: conversationDescriptor,
+  catalog: catalogDescriptor,
 }
 
 export const descriptorFor = <T = any>(kind: Kind): UiDescriptor<T> =>

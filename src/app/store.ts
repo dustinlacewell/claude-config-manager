@@ -58,6 +58,7 @@ interface EntitiesByKind {
   plugin: Entity<any>[]
   marketplace: Entity<any>[]
   conversation: Entity<any>[]
+  catalog: Entity<any>[]
 }
 
 const emptyBuckets = (): EntitiesByKind => ({
@@ -72,6 +73,7 @@ const emptyBuckets = (): EntitiesByKind => ({
   plugin: [],
   marketplace: [],
   conversation: [],
+  catalog: [],
 })
 
 interface State {
