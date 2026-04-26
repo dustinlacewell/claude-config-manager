@@ -25,6 +25,7 @@ pub fn run() {
             scan_for_projects,
             watch_paths,
             unwatch_all,
+            run_command,
             run_claude_cli,
             open_external,
         ])

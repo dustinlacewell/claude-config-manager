@@ -10,6 +10,7 @@ import { Marketplace } from './marketplace'
 import { ClaudeMd } from './claudemd'
 import { Memory } from './memory'
 import { Conversation } from './conversation'
+import { CatalogEntry } from './catalog'
 import type { Kind } from './core'
 
 export * from './core'
@@ -26,6 +27,7 @@ export * from './marketplace'
 export * from './claudemd'
 export * from './memory'
 export * from './conversation'
+export * from './catalog'
 export * from './settings'
 
 export type ScopeType = 'user' | 'project'
@@ -177,6 +179,20 @@ export const conversationSpec: KindSpec<Conversation> = {
   searchText: (v) => `${v.title} ${v.projectDir}`.toLowerCase(),
 }
 
+export const catalogSpec: KindSpec<CatalogEntry> = {
+  kind: 'catalog',
+  label: 'Catalog',
+  pluralLabel: 'Catalog',
+  schema: CatalogEntry,
+  validScopes: ['user', 'project'],
+  readOnly: true,
+  noCreate: true,
+  idOf: (v) => v.id,
+  nameOf: (v) => v.name,
+  searchText: (v) =>
+    `${v.name} ${v.type} ${v.description} ${v.author} ${v.tags.join(' ')}`.toLowerCase(),
+}
+
 export const kindSpecs: Record<Kind, KindSpec<any>> = {
   claudemd: claudemdSpec,
   memory: memorySpec,
@@ -189,6 +205,7 @@ export const kindSpecs: Record<Kind, KindSpec<any>> = {
   plugin: pluginSpec,
   marketplace: marketplaceSpec,
   conversation: conversationSpec,
+  catalog: catalogSpec,
 }
 
 export const allKinds: Kind[] = [
@@ -203,6 +220,7 @@ export const allKinds: Kind[] = [
   'plugin',
   'marketplace',
   'conversation',
+  'catalog',
 ]
 
 export const kindSupportsScope = (kind: Kind, scope: { type: ScopeType }): boolean =>

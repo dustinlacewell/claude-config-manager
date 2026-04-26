@@ -19,6 +19,7 @@ import {
   writeConversation,
   deleteConversation,
 } from './conversationAdapter'
+import { readCatalog } from './catalogAdapter'
 
 export * from './fs'
 export * from './paths'
@@ -40,6 +41,7 @@ export const readAll = async (loc: Location, home: string): Promise<AnyEntity[]>
     readClaudeMds(loc),
     readMemories(loc, home),
     readConversations(loc, home).then((r) => r.entities),
+    readCatalog(loc, home),
   ])
   return results.flat() as AnyEntity[]
 }
@@ -72,6 +74,8 @@ export const readByKind = async (
       return readMemories(loc, home)
     case 'conversation':
       return (await readConversations(loc, home)).entities
+    case 'catalog':
+      return readCatalog(loc, home)
   }
 }
 
@@ -118,6 +122,8 @@ export const writeEntity = async (
       return
     case 'conversation':
       return
+    case 'catalog':
+      return
   }
 }
 
@@ -160,6 +166,8 @@ export const createEntity = async (
     case 'conversation':
       await writeConversation(ctx.loc, ctx.home, value)
       return
+    case 'catalog':
+      return
   }
 }
 
@@ -200,6 +208,8 @@ export const deleteEntity = async (
       return
     case 'conversation':
       await deleteConversation(entity)
+      return
+    case 'catalog':
       return
   }
 }

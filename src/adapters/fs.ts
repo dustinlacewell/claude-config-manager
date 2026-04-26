@@ -66,6 +66,12 @@ export const fs = {
     invoke('scan_for_projects', { root, maxDepth }),
   onChange: (cb: (ev: FsChange) => void): Promise<UnlistenFn> =>
     listen<FsChange>('fs:change', (e) => cb(e.payload)),
+  runCommand: (
+    program: string,
+    args: string[],
+    timeoutMs?: number,
+  ): Promise<{ stdout: string; stderr: string; exit_code: number }> =>
+    invoke('run_command', { program, args, timeoutMs }),
   runClaudeCli: (
     args: string[],
     timeoutMs?: number,
