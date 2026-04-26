@@ -75,13 +75,17 @@ export const readClaudeMds = async (loc: Location): Promise<Entity<ClaudeMd>[]> 
   return out
 }
 
+export const claudeMdTargetPath = (loc: Location, c: ClaudeMd): string => {
+  const relPath = (c.relPath || 'CLAUDE.md').replace(/^[/\\]+/, '')
+  return join(loc.root, relPath)
+}
+
 export const writeClaudeMd = async (
   loc: Location,
   original: Entity<ClaudeMd> | null,
   next: ClaudeMd,
 ): Promise<string> => {
-  const relPath = (next.relPath || 'CLAUDE.md').replace(/^[/\\]+/, '')
-  const nextPath = join(loc.root, relPath)
+  const nextPath = claudeMdTargetPath(loc, next)
   if (original && original.path !== nextPath) {
     if (await fs.pathExists(original.path)) await fs.removePath(original.path)
   }

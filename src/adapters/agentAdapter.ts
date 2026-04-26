@@ -23,12 +23,15 @@ export const readAgents = (loc: Location): Promise<Entity<Agent>[]> =>
     idOf: (v) => v.name,
   })
 
+export const agentTargetPath = (loc: Location, a: Agent): string =>
+  join(agentsDir(loc), `${clean(a.name)}.md`)
+
 export const writeAgent = async (
   loc: Location,
   original: Entity<Agent> | null,
   next: Agent,
 ): Promise<string> => {
-  const nextPath = join(agentsDir(loc), `${clean(next.name)}.md`)
+  const nextPath = agentTargetPath(loc, next)
   if (original && original.path !== nextPath) {
     if (await fs.pathExists(original.path)) await fs.removePath(original.path)
   }

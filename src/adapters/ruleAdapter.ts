@@ -33,12 +33,15 @@ const toFile = (r: Rule): string => {
   return safePath ? `${safePath}/${safeName}.md` : `${safeName}.md`
 }
 
+export const ruleTargetPath = (loc: Location, r: Rule): string =>
+  join(rulesDir(loc), toFile(r))
+
 export const writeRule = async (
   loc: Location,
   original: Entity<Rule> | null,
   next: Rule,
 ): Promise<string> => {
-  const nextPath = join(rulesDir(loc), toFile(next))
+  const nextPath = ruleTargetPath(loc, next)
   if (original && original.path !== nextPath) {
     if (await fs.pathExists(original.path)) await fs.removePath(original.path)
   }

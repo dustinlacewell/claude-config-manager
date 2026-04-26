@@ -5,6 +5,7 @@ import { EditPane } from './EditPane'
 import { useStore } from '@/app/store'
 import {
   CommandPalette,
+  ConfirmHost,
   ContextMenuHost,
   PromptHost,
   ScanDialogHost,
@@ -51,6 +52,7 @@ export function Shell() {
       <CommandPalette actions={actions} />
       <ContextMenuHost />
       <PromptHost />
+      <ConfirmHost />
       <ScanDialogHost
         onAdd={async (paths) => {
           for (const p of paths) await addProject(p)

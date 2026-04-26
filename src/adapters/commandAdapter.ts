@@ -35,12 +35,15 @@ const toFile = (c: Command): string => {
   return safePath ? `${safePath}/${safeName}.md` : `${safeName}.md`
 }
 
+export const commandTargetPath = (loc: Location, c: Command): string =>
+  join(commandsDir(loc), toFile(c))
+
 export const writeCommand = async (
   loc: Location,
   original: Entity<Command> | null,
   next: Command,
 ): Promise<string> => {
-  const nextPath = join(commandsDir(loc), toFile(next))
+  const nextPath = commandTargetPath(loc, next)
   if (original && original.path !== nextPath) {
     if (await fs.pathExists(original.path)) await fs.removePath(original.path)
   }

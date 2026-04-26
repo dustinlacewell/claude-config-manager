@@ -83,6 +83,9 @@ export const readSkills = async (loc: Location): Promise<Entity<Skill>[]> => {
 const skillDir = (loc: Location, name: string): string =>
   join(skillsDir(loc), clean(name))
 
+export const skillTargetPath = (loc: Location, s: Skill): string =>
+  join(skillDir(loc, s.name), 'SKILL.md')
+
 export const writeSkill = async (
   loc: Location,
   original: Entity<Skill> | null,

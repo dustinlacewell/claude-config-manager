@@ -128,6 +128,15 @@ const serialize = (m: Memory): string =>
     m.body,
   )
 
+export const memoryTargetPath = (
+  loc: Location,
+  home: string,
+  m: Memory,
+): string | null => {
+  if (loc.scope.type !== 'project') return null
+  return join(memoryDirOf(home, loc.root), fileNameOf(m))
+}
+
 export const writeMemoryEntry = async (
   loc: Location,
   home: string,

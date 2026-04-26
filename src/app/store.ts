@@ -44,7 +44,8 @@ import {
   scopeEq,
   scopeKey,
 } from '@/ontology'
-import { buildReferenceGraph, type Reference } from '@/engine'
+import { buildReferenceGraph, entityExistsAt, type Reference } from '@/engine'
+import { confirm } from '@/ui-primitives'
 
 interface EntitiesByKind {
   claudemd: Entity<any>[]
@@ -149,6 +150,24 @@ const resolveContext = (s: State): { loc: Location; home: string } | null => {
   const loc = resolveLocation(s.scope, s.home, s.projects)
   if (!loc) return null
   return { loc, home: s.home }
+}
+
+const confirmIfCollides = async (
+  ctx: WriteContext,
+  kind: Kind,
+  value: any,
+  verb: 'copy' | 'move' | 'create',
+): Promise<boolean> => {
+  const hit = await entityExistsAt(ctx, kind, value)
+  if (!hit) return true
+  const verbTitle =
+    verb === 'copy' ? 'Copy' : verb === 'move' ? 'Move' : 'Create'
+  return confirm({
+    title: `Overwrite existing ${kind}?`,
+    body: `${verbTitle} would overwrite:\n${hit.where}`,
+    confirmLabel: 'Overwrite',
+    danger: true,
+  })
 }
 
 const resolveSelection = (
@@ -607,19 +626,27 @@ export const useStore = create<Store>((set, get) => ({
     const state = get()
     const targetLoc = resolveLocation(target, state.home, state.projects)
     if (!targetLoc) return
+    const ctx = { loc: targetLoc, home: state.home }
+    if (!(await confirmIfCollides(ctx, entity.kind, entity.value, 'copy'))) return
     try {
-      await adapterCreate(
-        { loc: targetLoc, home: state.home },
-        entity.kind,
-        entity.value,
-      )
+      await adapterCreate(ctx, entity.kind, entity.value)
     } catch (e) {
       set({ lastError: e instanceof Error ? e.message : String(e) })
     }
   },
 
   moveToScope: async (entity, target) => {
-    await get().copyToScope(entity, target)
+    const state = get()
+    const targetLoc = resolveLocation(target, state.home, state.projects)
+    if (!targetLoc) return
+    const ctx = { loc: targetLoc, home: state.home }
+    if (!(await confirmIfCollides(ctx, entity.kind, entity.value, 'move'))) return
+    try {
+      await adapterCreate(ctx, entity.kind, entity.value)
+    } catch (e) {
+      set({ lastError: e instanceof Error ? e.message : String(e) })
+      return
+    }
     await get().deleteExisting(entity)
   },
 
@@ -627,8 +654,10 @@ export const useStore = create<Store>((set, get) => ({
     const state = get()
     const targetLoc = resolveLocation(target, state.home, state.projects)
     if (!targetLoc) return
+    const ctx = { loc: targetLoc, home: state.home }
+    if (!(await confirmIfCollides(ctx, kind, value, 'create'))) return
     try {
-      await adapterCreate({ loc: targetLoc, home: state.home }, kind, value)
+      await adapterCreate(ctx, kind, value)
       // Only refresh if the target scope is the one currently on screen;
       // otherwise the change is off-screen and will be picked up when the
       // user switches to that scope.
