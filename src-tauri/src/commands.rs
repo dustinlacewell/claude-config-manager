@@ -466,6 +466,53 @@ pub struct CliResult {
     pub exit_code: i32,
 }
 
+/// Spawn an arbitrary program with the given arguments.
+///
+/// On Windows programs are invoked via `cmd /C` so that `.cmd` shims and
+/// PATH-resolved binaries work. On other platforms the binary is exec'd
+/// directly.
+#[tauri::command]
+pub async fn run_command(
+    program: String,
+    args: Vec<String>,
+    timeout_ms: Option<u64>,
+) -> Result<CliResult, String> {
+    let timeout = std::time::Duration::from_millis(timeout_ms.unwrap_or(300_000));
+
+    let mut command = if cfg!(target_os = "windows") {
+        let mut c = tokio::process::Command::new("cmd");
+        c.arg("/C").arg(&program);
+        for a in &args {
+            c.arg(a);
+        }
+        c
+    } else {
+        let mut c = tokio::process::Command::new(&program);
+        for a in &args {
+            c.arg(a);
+        }
+        c
+    };
+
+    let child = command
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("failed to spawn {program}: {e}"))?;
+
+    let output = tokio::time::timeout(timeout, child.wait_with_output())
+        .await
+        .map_err(|_| format!("{program} timed out after {}ms", timeout.as_millis()))?
+        .map_err(|e| format!("failed to read {program} output: {e}"))?;
+
+    Ok(CliResult {
+        stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+        stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        exit_code: output.status.code().unwrap_or(-1),
+    })
+}
+
 /// Spawn the `claude` CLI with the given arguments.
 ///
 /// On Windows the CLI is typically installed as a `.cmd` shim, so we invoke

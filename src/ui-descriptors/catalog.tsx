@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import type { UiDescriptor, ListTab } from './types'
-import type { CatalogEntry, Kind } from '@/ontology'
+import type { UiDescriptor, ListTab, ActionContext } from './types'
+import type { CatalogEntry, Entity, Kind } from '@/ontology'
 import { useStore } from '@/app/store'
+import { runCliOp } from '@/app/cliOp'
+import { fs } from '@/adapters'
+import { prompt } from '@/ui-primitives'
 import { cn } from '@/ui-primitives/util'
 
 const TYPE_LABELS: Record<CatalogEntry['type'], string> = {
@@ -109,6 +112,31 @@ function CheckIcon() {
   )
 }
 
+const installFromGitHub = async () => {
+  const repo = await prompt('Install from skills.sh', {
+    placeholder: 'owner/repo  (e.g. anthropics/skills)',
+  })
+  if (!repo) return
+  await runCliOp({
+    key: `skills:install:${repo}`,
+    loading: `Installing skills from ${repo}...`,
+    success: `Skills from ${repo} installed`,
+    action: async () => {
+      const result = await fs.runCommand('npx', [
+        '-y', 'skills', 'add', repo, '-a', 'claude-code', '-y',
+      ], 120_000)
+      if (result.exit_code !== 0) {
+        throw new Error(result.stderr || `npx skills add exited with ${result.exit_code}`)
+      }
+      return result
+    },
+  })
+}
+
+const browseSkillsSh = () => {
+  void fs.openExternal('https://skills.sh')
+}
+
 const tabs: ListTab<CatalogEntry>[] = [
   { id: 'all', label: 'All', predicate: () => true },
   { id: 'agents', label: 'Agents', predicate: (v) => v.type === 'agent' },
@@ -118,7 +146,7 @@ const tabs: ListTab<CatalogEntry>[] = [
 
 export const catalogDescriptor: UiDescriptor<CatalogEntry> = {
   kind: 'catalog',
-  newDefault: () => ({ id: '', type: 'agent', name: '', installData: {}, tags: [], installed: false }),
+  newDefault: () => ({ id: '', type: 'agent' as const, name: '', description: '', author: '', installData: {}, tags: [], installed: false }),
   newLabel: '',
   newPromptLabel: '',
   tabs,
@@ -130,4 +158,14 @@ export const catalogDescriptor: UiDescriptor<CatalogEntry> = {
     </span>
   ),
   Editor: CatalogEditor,
+  headerActions: (_entity: Entity<CatalogEntry>, _ctx: ActionContext) => [
+    {
+      label: 'Browse skills.sh',
+      onSelect: browseSkillsSh,
+    },
+    {
+      label: 'Install from GitHub',
+      onSelect: installFromGitHub,
+    },
+  ],
 }

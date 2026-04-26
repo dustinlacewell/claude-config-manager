@@ -218,6 +218,16 @@ export const fs = {
     return () => {}
   },
 
+  runCommand: async (_program: string): Promise<{
+    stdout: string
+    stderr: string
+    exit_code: number
+  }> => ({
+    stdout: '',
+    stderr: 'Shell commands are not available in the demo.',
+    exit_code: 1,
+  }),
+
   runClaudeCli: async (): Promise<{
     stdout: string
     stderr: string
