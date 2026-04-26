@@ -83,7 +83,7 @@ export const entityExistsAt = async (
       return hit ? { where: `conversation ${value.sessionId}` } : null
     }
     case 'hook':
-      // Duplicate event+matcher hooks are legitimate — skip.
+    case 'catalog':
       return null
   }
 }
