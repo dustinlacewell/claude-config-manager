@@ -25,7 +25,7 @@ Six layers, each with a strict contract:
 | UI Descriptors | `src/ui-descriptors/` | Per-kind mapping of fields → primitives |
 | App Shell | `src/app/` | Store (Zustand), three-pane layout |
 
-The Rust layer (`src-tauri/src/commands.rs`) is intentionally thin — async FS ops, a file watcher, and parallel project scanning via the `ignore` crate.
+The Rust layer (`src-tauri/src/commands.rs`) is intentionally thin — async FS ops, a file watcher, parallel project scanning via the `ignore` crate, and a generic `run_command` for spawning external tools (e.g. `skills` CLI, `curl`).
 
 ## Adding a New Config Kind
 
@@ -38,7 +38,9 @@ The Rust layer (`src-tauri/src/commands.rs`) is intentionally thin — async FS 
 7. `src/ui-descriptors/index.ts` — add to `descriptors` record
 8. `src/app/store.ts` — add bucket to `EntitiesByKind` and `emptyBuckets()`
 
-Read-only kinds (e.g. `conversation`): set `readOnly: true` on `KindSpec`. The shell and palette automatically hide create/edit/delete for these.
+9. `src/engine/collision.ts` — add case to `entityExistsAt` switch (return `null` for read-only kinds)
+
+Read-only kinds (e.g. `conversation`, `catalog`): set `readOnly: true` on `KindSpec`. The shell and palette automatically hide create/edit/delete for these.
 
 ## Key Patterns
 
@@ -63,6 +65,8 @@ Read-only kinds (e.g. `conversation`): set `readOnly: true` on `KindSpec`. The s
 | Conversations | `~/.claude/projects/{encoded}/*.jsonl` |
 | App settings | `~/.config/ccm/config.json` |
 | UI state | `~/.config/ccm/ui-state.json` |
+| Catalog (bundled) | `src/data/catalog.ts` — 17 curated agents, skills, MCP configs |
+| Catalog (live) | Fetched from `https://skills.sh` via `curl` at startup |
 
 ## Tech Stack
 

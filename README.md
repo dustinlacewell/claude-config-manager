@@ -8,7 +8,7 @@ Browse, edit, and organize agents, commands, skills, rules, hooks, MCP servers, 
 
 - **Three-pane interface** — scope selector, entity list, inline editor
 - **Two scopes** — global (`~/.claude/`) and per-project (`.claude/`)
-- **11 config kinds** — agents, commands, skills, rules, hooks, MCP servers, plugins, marketplaces, CLAUDE.md files, memories, conversations
+- **12 config kinds** — agents, commands, skills, rules, hooks, MCP servers, plugins, marketplaces, CLAUDE.md files, memories, conversations, catalog
 - **Live editing** — changes auto-save with 350ms debounce, no save button
 - **File watching** — external changes (from Claude Code, git, etc.) appear instantly
 - **Reference graph** — see which entities reference each other, with broken-link warnings
@@ -17,6 +17,7 @@ Browse, edit, and organize agents, commands, skills, rules, hooks, MCP servers, 
 - **Conversation viewer** — browse session history with syntax-highlighted tool calls and diffs
 - **Token counting** — see how many tokens each config file consumes (requires API key)
 - **Plugin management** — install, enable/disable, and browse marketplace plugins
+- **Catalog & skills.sh** — browse 190+ skills from the [skills.sh](https://skills.sh) leaderboard plus curated agents and MCP server configs; one-click install via the `skills` CLI or direct file write
 - **Auto-updates** — built-in update checker via GitHub releases
 
 ## Install

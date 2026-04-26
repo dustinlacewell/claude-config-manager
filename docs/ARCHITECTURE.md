@@ -48,7 +48,7 @@ The domain model. Every config artifact type has:
 The `Kind` enum is the universal discriminator:
 
 ```
-claudemd | memory | agent | command | skill | rule | hook | mcp | plugin | marketplace | conversation
+claudemd | memory | agent | command | skill | rule | hook | mcp | plugin | marketplace | conversation | catalogrketplace | conversation
 ```
 
 Each kind declares which scopes it supports via `KindSpec.validScopes`:
@@ -91,6 +91,8 @@ Adapters are wired together through `adapters/index.ts`, which exposes three dis
 1. **Markdown adapters** (agent, command, skill, rule, memory, claudemd): Use the shared `readMarkdownDir` / `writeMarkdown` helpers. Files are YAML-frontmatter markdown parsed by `frontmatter.ts`.
 
 2. **JSON adapters** (hook, mcp, plugin, marketplace, conversation): Read/write JSON files directly. Hooks and MCP servers are embedded inside larger JSON files (settings.json, .mcp.json, .claude.json) — the adapter reads the whole file, patches the relevant section, and writes it back.
+
+3. **Catalog adapter** (catalog): A hybrid source. Merges bundled entries from `src/data/catalog.ts` (17 curated agents, skills, and MCP configs) with live entries fetched from [skills.sh](https://skills.sh) via `curl` through the Rust `run_command` IPC. The scraper (`skillsShScraper.ts`) parses the SSR HTML to extract skill names, repos, ranks, and install counts. Installed status is determined by checking existing files in the current scope's agents/skills directories and MCP config. The catalog is read-only (`readOnly: true`, `noCreate: true`); the install action delegates to the target kind's adapter (agents/skills write via markdown, MCP writes via JSON, skills.sh entries install via the `skills` CLI).
 
 **Shared infrastructure:**
 

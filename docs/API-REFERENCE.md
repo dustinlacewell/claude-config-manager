@@ -226,6 +226,22 @@ Source types: `github` (repo, ref?, sha?), `url` (url, ref?, sha?), `git-subdir`
 }
 ```
 
+#### CatalogEntry
+```typescript
+{
+  id: string                              // 'agent:code-reviewer' or 'skillssh:owner/repo/slug'
+  type: 'agent' | 'skill' | 'mcp'        // what kind of entity this installs as
+  name: string
+  description: string
+  author: string
+  tags: string[]
+  installData: Record<string, unknown>    // value passed to createEntity (or repo+slug for skills.sh)
+  installed: boolean                      // computed at read time by checking disk
+}
+```
+
+Bundled entries have `installData` matching the target kind's schema (Agent, Skill, or McpServer). Skills.sh entries have `installData: { repo, slug }` and install via the `skills` CLI.
+
 #### Project
 ```typescript
 {
@@ -375,6 +391,15 @@ interface Location {
 - `parseConversationMessages(filePath): Promise<ParsedMessage[]>` — cached, deduplicated message parser
 - `prefetchConversation(filePath): void` — fire-and-forget background parse
 - `fetchToolResults(filePath): Promise<Map<string, string>>` — lazy-load tool_result blocks
+
+### Catalog Adapter (`catalogAdapter.ts`)
+
+- `readCatalog(loc, home): Promise<Entity<CatalogEntry>[]>` — merges bundled entries with live skills.sh data. Checks installed status by listing agents/skills directories and reading MCP config. Write/create/delete are no-ops (catalog is read-only).
+
+### Skills.sh Scraper (`skillsShScraper.ts`)
+
+- `fetchSkillsSh(): Promise<CatalogEntry[]>` — fetches skills.sh HTML via `curl` (through Rust `run_command`), parses the SSR leaderboard to extract skill entries (name, repo, rank, install count). Results are cached in memory; returns `[]` on failure.
+- `invalidateSkillsShCache(): void` — clears the cache so the next `fetchSkillsSh()` re-fetches.
 
 ### Token Counter (`tokenCounter.ts`)
 
@@ -616,6 +641,7 @@ All commands are async unless noted. Errors are returned as `String`.
 | `watch_paths` | `paths: Vec<String>` | `()` | replaces any existing watcher; sync |
 | `unwatch_all` | — | `()` | sync |
 | `open_external` | `target: String` | `()` | platform-specific (xdg-open/open/start) |
+| `run_command` | `program, args, timeout_ms?` | `CliResult` | generic process spawner; uses `cmd /C` on Windows |
 | `run_claude_cli` | `args, timeout_ms?` | `CliResult` | default 300s timeout |
 
 ### Ignored Directories

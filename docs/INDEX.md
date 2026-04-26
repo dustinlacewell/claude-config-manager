@@ -2,7 +2,7 @@
 
 Complete file-by-file index of the Claude Code Manager codebase. Every source file is cataloged with its role, exports, size, and cross-references.
 
-**Total**: 10,774 lines TypeScript/TSX + 554 lines Rust across 107 source files.
+**Total**: ~11,400 lines TypeScript/TSX + ~600 lines Rust across 112 source files.
 
 ---
 
@@ -118,11 +118,14 @@ Project schema: `id`, `path`, `name`, `exists`.
 
 Utilities: `projectIdOf(path)`, `projectNameOf(path)`.
 
+### `catalog.ts` (16 lines)
+Catalog entry schema: `id`, `type` (agent/skill/mcp), `name`, `description`, `author`, `tags[]`, `installData` (Record), `installed` (boolean, computed at read time).
+
 ### `settings.ts` (16 lines)
 App settings schema: `anthropic.apiKey`, `markdownDefaultMode` (edit/read), `checkUpdatesOnStartup`, `markedPlugins[]`.
 
-### `index.ts` (215 lines)
-Barrel export + `KindSpec<T>` registrations for all 11 kinds. Defines `kindSpecs` record, `allKinds` array, and scope-query functions.
+### `index.ts` (230 lines)
+Barrel export + `KindSpec<T>` registrations for all 12 kinds. Defines `kindSpecs` record, `allKinds` array, and scope-query functions.
 
 ---
 
@@ -228,8 +231,23 @@ Also exports conversation message parsing (`parseConversationMessages`), tool re
 
 Includes `isSystemInjection()` filter for `<ide_*>`, `<system*>`, `<user-prompt*>` blocks.
 
-### `index.ts` (205 lines)
-Barrel + dispatch. Three parallel `switch` statements: `writeEntity`, `createEntity`, `deleteEntity`. Also `readAll` and `readByKind`.
+#### `catalogAdapter.ts` (55 lines)
+Hybrid adapter. Merges bundled entries from `data/catalog.ts` with live skills.sh entries from `skillsShScraper.ts`. Batch-checks installed status via three parallel calls (list agents dir, list skills dir, read MCP config). Write/create/delete are no-ops (read-only kind).
+Exports: `readCatalog`.
+
+#### `skillsShScraper.ts` (80 lines)
+Fetches the skills.sh leaderboard HTML via `curl` through Rust `run_command` IPC, parses SSR HTML with a regex to extract skill entries (name, repo, rank, install count). In-memory cache with manual invalidation. Returns `[]` on failure (network error, demo mode).
+Exports: `fetchSkillsSh`, `invalidateSkillsShCache`.
+
+### `index.ts` (215 lines)
+Barrel + dispatch. Four parallel `switch` statements: `readByKind`, `writeEntity`, `createEntity`, `deleteEntity`. Also `readAll`. Catalog cases are no-ops for write/create/delete.
+
+---
+
+## Data (`src/data/`) — 230 lines
+
+### `catalog.ts` (230 lines)
+Bundled catalog entries: 5 agents (code-reviewer, test-generator, doc-writer, refactoring-helper, security-auditor), 5 skills (tdd, conventional-commits, explain-code, debug, api-design), 7 MCP servers (filesystem, brave-search, github, puppeteer, memory, sequential-thinking, sqlite). Each entry's `installData` matches the target kind's Zod schema.
 
 ---
 
@@ -482,6 +500,16 @@ The most complex descriptor. Read-only. Multi-tab: All / Recent (7 days). Featur
 - Token count display
 - Predictive prefetch on hover (120ms delay)
 
+### `catalog.tsx` (175 lines)
+Catalog browser. Read-only. Multi-tab: All / Agents / Skills / MCP / skills.sh. Features:
+- Type badges (Agent/Skill/MCP Server) with color coding
+- "skills.sh" badge on live entries
+- Install button: bundled entries write via target kind adapter; skills.sh entries install via `skills add` CLI
+- Installed checkmark indicator (computed from disk state)
+- "View on skills.sh" link for live entries
+- Header actions: Browse skills.sh (opens browser), Install from GitHub (prompt + CLI), Refresh (invalidates cache)
+- Install data preview (expandable JSON)
+
 ---
 
 ## App Shell (`src/app/`) — 1,505 lines
@@ -584,6 +612,7 @@ App Shell (store, shell, palette, updater)
 | claudemd | `ontology/claudemd.ts` (14) | `claudemdAdapter.ts` (97) | `claudemd.tsx` (22) | `extractors.ts` | ~184 |
 | memory | `ontology/memory.ts` (28) | `memoryAdapter.ts` (160) | `memory.tsx` (78) | `extractors.ts` | ~317 |
 | conversation | `ontology/conversation.ts` (13) | `conversationAdapter.ts` (363) | `conversation.tsx` (826) | — | ~1,202 |
+| catalog | `ontology/catalog.ts` (16) | `catalogAdapter.ts` (55) + `skillsShScraper.ts` (80) + `data/catalog.ts` (230) | `catalog.tsx` (175) | — | ~556 |
 
 ---
 
@@ -611,3 +640,5 @@ App Shell (store, shell, palette, updater)
 | File cache | `~/.config/ccm/file-cache.cache.json` | JSON |
 | Conversation meta cache | `~/.config/ccm/conversation-meta.cache.json` | JSON |
 | Token cache | `~/.config/ccm/token-cache.json` | JSON |
+| Catalog (bundled) | `src/data/catalog.ts` (compiled into app) | TypeScript array |
+| Catalog (live) | Fetched from `https://skills.sh` via `curl` | In-memory cache (not persisted) |
