@@ -4,6 +4,7 @@ import type { CatalogEntry, Entity, Kind } from '@/ontology'
 import { useStore } from '@/app/store'
 import { runCliOp } from '@/app/cliOp'
 import { fs } from '@/adapters'
+import { invalidateSkillsShCache } from '@/adapters/skillsShScraper'
 import { prompt } from '@/ui-primitives'
 import { cn } from '@/ui-primitives/util'
 
@@ -27,6 +28,9 @@ function TypeBadge({ type }: { type: CatalogEntry['type'] }) {
   )
 }
 
+const isSkillsShEntry = (entry: CatalogEntry): boolean =>
+  entry.id.startsWith('skillssh:')
+
 function CatalogEditor({
   value,
 }: {
@@ -41,9 +45,31 @@ function CatalogEditor({
   const handleInstall = async () => {
     setInstalling(true)
     try {
-      const targetKind: Kind = value.type === 'mcp' ? 'mcp' : value.type
-      await createNew(targetKind, value.name, value.installData)
-      await reload()
+      if (isSkillsShEntry(value)) {
+        const data = value.installData as { repo: string; slug: string }
+        await runCliOp({
+          key: `catalog:install:${value.id}`,
+          loading: `Installing ${value.name} from ${data.repo}...`,
+          success: `${value.name} installed`,
+          action: async () => {
+            const result = await fs.runCommand('skills', [
+              'add', data.repo,
+              '--skill', data.slug,
+              '-a', 'claude-code',
+              '-y',
+            ], 120_000)
+            if (result.exit_code !== 0) {
+              throw new Error(result.stderr || `skills add exited with ${result.exit_code}`)
+            }
+            return result
+          },
+          reload: true,
+        })
+      } else {
+        const targetKind: Kind = value.type === 'mcp' ? 'mcp' : value.type
+        await createNew(targetKind, value.name, value.installData)
+        await reload()
+      }
     } finally {
       setInstalling(false)
     }
@@ -54,6 +80,9 @@ function CatalogEditor({
       <div className="flex items-center gap-2">
         <TypeBadge type={value.type} />
         {value.author && <span className="text-xs text-zinc-500">by {value.author}</span>}
+        {isSkillsShEntry(value) && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-900/40 text-orange-300">skills.sh</span>
+        )}
       </div>
 
       <p className="text-sm text-zinc-300">{value.description}</p>
@@ -71,7 +100,7 @@ function CatalogEditor({
         </div>
       )}
 
-      <div className="pt-2">
+      <div className="pt-2 flex items-center gap-3">
         {value.installed ? (
           <span className="inline-flex items-center gap-1.5 text-sm text-emerald-400">
             <CheckIcon /> Installed
@@ -88,6 +117,17 @@ function CatalogEditor({
             )}
           >
             {installing ? 'Installing...' : `Install ${TYPE_LABELS[value.type]}`}
+          </button>
+        )}
+        {isSkillsShEntry(value) && (
+          <button
+            onClick={() => {
+              const data = value.installData as { repo: string; slug: string }
+              void fs.openExternal(`https://skills.sh/${data.repo}/${data.slug}`)
+            }}
+            className="text-xs text-zinc-500 hover:text-zinc-300"
+          >
+            View on skills.sh
           </button>
         )}
       </div>
@@ -122,11 +162,11 @@ const installFromGitHub = async () => {
     loading: `Installing skills from ${repo}...`,
     success: `Skills from ${repo} installed`,
     action: async () => {
-      const result = await fs.runCommand('npx', [
-        '-y', 'skills', 'add', repo, '-a', 'claude-code', '-y',
+      const result = await fs.runCommand('skills', [
+        'add', repo, '-a', 'claude-code', '-y',
       ], 120_000)
       if (result.exit_code !== 0) {
-        throw new Error(result.stderr || `npx skills add exited with ${result.exit_code}`)
+        throw new Error(result.stderr || `skills add exited with ${result.exit_code}`)
       }
       return result
     },
@@ -137,11 +177,17 @@ const browseSkillsSh = () => {
   void fs.openExternal('https://skills.sh')
 }
 
+const refreshCatalog = async () => {
+  invalidateSkillsShCache()
+  await useStore.getState().reload()
+}
+
 const tabs: ListTab<CatalogEntry>[] = [
   { id: 'all', label: 'All', predicate: () => true },
   { id: 'agents', label: 'Agents', predicate: (v) => v.type === 'agent' },
   { id: 'skills', label: 'Skills', predicate: (v) => v.type === 'skill' },
   { id: 'mcp', label: 'MCP', predicate: (v) => v.type === 'mcp' },
+  { id: 'skillssh', label: 'skills.sh', predicate: (v) => isSkillsShEntry(v) },
 ]
 
 export const catalogDescriptor: UiDescriptor<CatalogEntry> = {
@@ -166,6 +212,10 @@ export const catalogDescriptor: UiDescriptor<CatalogEntry> = {
     {
       label: 'Install from GitHub',
       onSelect: installFromGitHub,
+    },
+    {
+      label: 'Refresh',
+      onSelect: refreshCatalog,
     },
   ],
 }
